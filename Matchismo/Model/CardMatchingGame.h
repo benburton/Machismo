@@ -13,5 +13,6 @@
 - (Card *)cardAtIndex:(NSUInteger)index;
 
 @property (readonly, nonatomic) int score;
+@property NSString *status;
 
 @end

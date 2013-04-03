@@ -13,13 +13,13 @@
 
 @implementation CardGameViewController
 
-- (void) setCardButtons:(NSArray *)cardButtons
+- (void)setCardButtons:(NSArray *)cardButtons
 {
     _cardButtons = cardButtons;
     [self updateUI];
 }
 
-- (void) updateUI
+- (void)updateUI
 {
     for (UIButton *cardButton in self.cardButtons) {
         Card *card = [self.game cardAtIndex:[self.cardButtons indexOfObject:cardButton]];
@@ -33,7 +33,7 @@
     self.statusLabel.text = self.game.status;
 }
 
-- (void) resetGame
+- (void)resetGame
 {
     self.game = [[CardMatchingGame alloc] initWithCardCount:[self.cardButtons count]
                                                   usingDeck: [[PlayingCardDeck alloc] init]];
@@ -53,6 +53,11 @@
     self.flipsLabel.text = [NSString stringWithFormat:@"Flips: %d", self.flipCount];
 }
 
+- (IBAction)changeMatchCount:(UISegmentedControl *)sender
+{
+    int matchCount = sender.selectedSegmentIndex == 0 ? 2 : 3;
+    
+}
 
 - (IBAction)dealCards
 {

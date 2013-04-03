@@ -33,11 +33,16 @@
     self.statusLabel.text = self.game.status;
 }
 
+- (void) resetGame
+{
+    self.game = [[CardMatchingGame alloc] initWithCardCount:[self.cardButtons count]
+                                                  usingDeck: [[PlayingCardDeck alloc] init]];
+}
+
 - (CardMatchingGame *)game
 {
     if (!_game) {
-        _game = [[CardMatchingGame alloc] initWithCardCount:[self.cardButtons count]
-                                                  usingDeck: [[PlayingCardDeck alloc] init]];
+        [self resetGame];
     }
     return _game;
 }
@@ -48,6 +53,13 @@
     self.flipsLabel.text = [NSString stringWithFormat:@"Flips: %d", self.flipCount];
 }
 
+
+- (IBAction)dealCards
+{
+    [self resetGame];
+    self.flipCount = 0;
+    [self updateUI];
+}
 
 - (IBAction)flipCard:(UIButton *)sender
 {

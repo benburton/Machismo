@@ -68,7 +68,6 @@
             if (card) {
                 self.cards[i] = card;
             } else {
-                self = nil;
                 break;
             }
         }

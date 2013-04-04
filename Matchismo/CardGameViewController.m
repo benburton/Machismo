@@ -53,12 +53,6 @@
     self.flipsLabel.text = [NSString stringWithFormat:@"Flips: %d", self.flipCount];
 }
 
-- (IBAction)changeMatchCount:(UISegmentedControl *)sender
-{
-    int matchCount = sender.selectedSegmentIndex == 0 ? 2 : 3;
-    
-}
-
 - (IBAction)dealCards
 {
     [self resetGame];

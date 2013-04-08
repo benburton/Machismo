@@ -1,20 +1,45 @@
 #import "CardGameViewController.h"
-#import "PlayingCardDeck.h"
 #import "CardMatchingGame.h"
 #import "GameResult.h"
 
-@interface CardGameViewController ()
+@interface CardGameViewController () <UICollectionViewDataSource>
 @property (weak, nonatomic) IBOutlet UILabel *flipsLabel;
 @property (nonatomic) int flipCount;
-@property (strong, nonatomic) IBOutletCollection(UIButton) NSArray *cardButtons;
 @property (weak, nonatomic) IBOutlet UILabel *scoreLabel;
 @property (weak, nonatomic) IBOutlet UILabel *statusLabel;
 @property (strong, nonatomic) CardMatchingGame *game;
+@property (weak, nonatomic) IBOutlet UICollectionView *cardCollectionView;
 @property (strong, nonatomic) GameResult *gameResult;
 @end
 
 @implementation CardGameViewController
 
+- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView
+{
+    return 1;
+}
+
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
+{
+    return self.startingCardCount; 
+}
+
+- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
+{
+    UICollectionViewCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"PlayingCard" forIndexPath:indexPath];
+    Card *card = [self.game cardAtIndex:indexPath.item];
+    [self updateCell:cell usingCard:card];
+    return cell;
+}
+
+- (void)updateCell: (UICollectionViewCell *)cell usingCard:(Card *)card
+{
+    [self updateCell:cell usingCard:card animate:NO];
+}
+
+- (void)updateCell: (UICollectionViewCell *)cell usingCard:(Card *)card animate:(BOOL) animate {
+    // abstract
+}
 
 - (GameResult *)gameResult
 {
@@ -24,34 +49,31 @@
     return _gameResult;
 }
 
-- (void)setCardButtons:(NSArray *)cardButtons
+-(void)updateUI
 {
-    _cardButtons = cardButtons;
-    [self updateUI];
+    [self updateUIAndFlipCardAtIndex:-1];
 }
 
-- (void)updateUI
+- (void)updateUIAndFlipCardAtIndex:(int) index
 {
-    for (UIButton *cardButton in self.cardButtons) {
-        Card *card = [self.game cardAtIndex:[self.cardButtons indexOfObject:cardButton]];
-        [cardButton setTitle:card.contents forState:UIControlStateSelected];
-        [cardButton setTitle:card.contents forState:UIControlStateSelected|UIControlStateDisabled];
-        cardButton.selected = card.isFaceUp;
-        cardButton.enabled = !card.isUnplayable;
-        cardButton.alpha = (card.isUnplayable ? 0.3 : 1.0);
+    for (UICollectionViewCell *cell in [self.cardCollectionView visibleCells]) {
+        NSIndexPath *indexPath = [self.cardCollectionView indexPathForCell:cell];
+        Card *card = [self.game cardAtIndex:indexPath.item];
+        [self updateCell:cell usingCard:card];
     }
-    self.scoreLabel.text = [NSString stringWithFormat:@"Score: %d", self.game.score];
-    self.statusLabel.text = self.game.status;
+    self.scoreLabel.text = [NSString stringWithFormat: @"Score: %d", self.game.score];
 }
 
 - (CardMatchingGame *)game
 {
     if (!_game) {
-        _game = [[CardMatchingGame alloc] initWithCardCount:[self.cardButtons count]
-                                          usingDeck: [[PlayingCardDeck alloc] init]];
+        _game = [[CardMatchingGame alloc] initWithCardCount:self.startingCardCount
+                                          usingDeck: [self createDeck]];
     }
     return _game;
 }
+                 
+- (Deck *)createDeck { return nil; } // abstract
 
 - (void)setFlipCount:(int)flipCount
 {
@@ -67,12 +89,16 @@
     [self updateUI];
 }
 
-- (IBAction)flipCard:(UIButton *)sender
+- (IBAction)flipCard:(UITapGestureRecognizer *)gesture
 {
-    [self.game flipCardAtIndex: [self.cardButtons indexOfObject:sender]];
-    self.flipCount++;
-    [self updateUI];
-    self.gameResult.score = self.game.score;
+    CGPoint tapLocation = [gesture locationInView:self.cardCollectionView];
+    NSIndexPath *indexPath = [self.cardCollectionView indexPathForItemAtPoint:tapLocation];
+    if (indexPath) {
+        [self.game flipCardAtIndex: indexPath.item];
+        self.flipCount++;
+        [self updateUIAndFlipCardAtIndex: indexPath.item];
+        self.gameResult.score = self.game.score;
+    }
 }
 
 @end
